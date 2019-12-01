@@ -5,6 +5,8 @@ const sass = require('gulp-sass');
 
 const babel= require('gulp-babel');
 
+const imagemin = require("gulp-imagemin");
+
 const origin = 'src';
 const destination = 'build';
 
@@ -20,6 +22,13 @@ function html(cb) {
   cb();
 }
 
+function img(cb) {
+  src([`${origin}/img/*`])
+  .pipe(imagemin())
+  .pipe(dest(`${destination}/img`));
+  cb();
+}
+
 function css(cb) {
   src([`${origin}/css/animate.css`]).pipe(dest(`${destination}/css`));
 
@@ -27,7 +36,7 @@ function css(cb) {
   .pipe(sass({
     outputStyle: 'compressed'
   }))
-  
+
   .pipe(dest(`${destination}/css`));
 
   cb();
@@ -39,7 +48,7 @@ function js(cb) {
   src(`${origin}/js/script.js`)
   .pipe(babel({
     presets: ['@babel/env']
-  }))  
+  }))
   .pipe(dest(`${destination}/js`));
   cb();
 }
@@ -47,6 +56,7 @@ function js(cb) {
 function watcher(cb) {
   watch(`${origin}/**/*.html`).on('change', series(html, browserSync.reload))
   watch(`${origin}/**/*.scss`).on('change', series(css, browserSync.reload))
+  watch(`${origin}/img/*.+(jpg|gif)`).on('change', series(img, browserSync.reload))
   watch(`${origin}/**/*.js`).on('change', series(js, browserSync.reload))
   cb();
 }
@@ -57,9 +67,9 @@ function server(cb) {
     open: false,
     server: {
       baseDir: destination
-    }   
+    }
   })
   cb();
 }
 
-exports.default = series(clean, parallel(html, css, js), server, watcher);
+exports.default = series(clean, parallel(html, css, js, img), server, watcher);
